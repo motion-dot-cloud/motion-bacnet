@@ -32,8 +32,8 @@ func main() {
     //
     //data, err := client.ReadProperty()
 
-    getPropertyValue(client, "10.1.1.64", 700900)
-    //getObjects(client, "10.1.1.64", 700900)
+    //getPropertyValue(client, "10.1.1.64", 700900)
+    getObjects(client, "10.1.1.64", 700900)
 
     //devices, err := client.WhoIs(bacip.WhoIs{
     //    Low:  nil,
@@ -43,7 +43,6 @@ func main() {
     //j, err = json.Marshal(devices)
     //
     //fmt.Println(string(j))
-
 
 }
 
@@ -123,4 +122,6 @@ func getObjects(c *bacip.Client, ipAddr string, instanceID int) {
 
     fmt.Printf("%v \n", val)
     fmt.Printf("%v \n", err)
+
+    time.Sleep(5)
 }

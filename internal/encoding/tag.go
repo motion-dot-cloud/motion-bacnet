@@ -38,7 +38,7 @@ const (
     TagExtendedValue   = 5
     TagOpening         = 6
     TagClosing         = 7
-    TagContextSpecific = 8
+    TagContextSpecific = 0
 )
 
 type tag struct {
@@ -116,10 +116,13 @@ func encodeTag(buf *bytes.Buffer, t tag) {
 
 func decodeTag(buf *bytes.Buffer) (length int, t tag, err error) {
     firstByte, err := buf.ReadByte()
+
     if err != nil {
         return length, t, fmt.Errorf("read tagID: %w", err)
     }
+
     length++
+
     if isExtendedTagNumber(firstByte) {
         tagNumber, err := buf.ReadByte()
         if err != nil {
@@ -131,6 +134,7 @@ func decodeTag(buf *bytes.Buffer) (length int, t tag, err error) {
         tagNumber := firstByte >> 4
         t.ID = tagNumber
     }
+
     if isContextSpecific(firstByte) {
         t.Context = true
     }
@@ -139,6 +143,7 @@ func decodeTag(buf *bytes.Buffer) (length int, t tag, err error) {
         t.Opening = true
         return length, t, nil
     }
+
     if isClosingTag(firstByte) {
         t.Closing = true
         return length, t, nil
@@ -172,5 +177,6 @@ func decodeTag(buf *bytes.Buffer) (length int, t tag, err error) {
     } else {
         t.Value = uint32(firstByte & 0x7)
     }
+
     return length, t, nil
 }

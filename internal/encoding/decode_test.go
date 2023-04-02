@@ -58,27 +58,27 @@ func TestValidAppData(t *testing.T) {
 			switch tc.expected.(type) {
 			case bacnet.ObjectID:
 				x := bacnet.ObjectID{}
-				decoder.AppData(&x)
+				decoder.AppData(&x, nil)
 				is.NoErr(decoder.err)
 				is.Equal(x, tc.expected)
 			case uint32:
 				var x uint32
-				decoder.AppData(&x)
+				decoder.AppData(&x, nil)
 				is.NoErr(decoder.err)
 				is.Equal(x, tc.expected)
 			case bacnet.SegmentationSupport:
 				var x bacnet.SegmentationSupport
-				decoder.AppData(&x)
+				decoder.AppData(&x, nil)
 				is.NoErr(decoder.err)
 				is.Equal(x, tc.expected)
 			case string:
 				var x string
-				decoder.AppData(&x)
+				decoder.AppData(&x, nil)
 				is.NoErr(decoder.err)
 				is.Equal(x, tc.expected)
 			case float32:
 				var x float32
-				decoder.AppData(&x)
+				decoder.AppData(&x, nil)
 				is.NoErr(decoder.err)
 				is.Equal(x, tc.expected)
 			default:
@@ -90,7 +90,7 @@ func TestValidAppData(t *testing.T) {
 			//Ensure that it work when passed an empty interface
 			var v interface{}
 			decoder = NewDecoder(b)
-			decoder.AppData(&v)
+			decoder.AppData(&v, nil)
 			is.NoErr(decoder.err)
 			if tc.expectedBis != nil {
 				is.Equal(v, tc.expectedBis)

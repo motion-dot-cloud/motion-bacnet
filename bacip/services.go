@@ -59,10 +59,10 @@ func (iam Iam) MarshalBinary() ([]byte, error) {
 
 func (iam *Iam) UnmarshalBinary(data []byte) error {
 	decoder := encoding.NewDecoder(data)
-	decoder.AppData(&iam.ObjectID)
-	decoder.AppData(&iam.MaxApduLength)
-	decoder.AppData(&iam.SegmentationSupport)
-	decoder.AppData(&iam.VendorID)
+	decoder.AppData(&iam.ObjectID, nil)
+	decoder.AppData(&iam.MaxApduLength, nil)
+	decoder.AppData(&iam.SegmentationSupport, nil)
+	decoder.AppData(&iam.VendorID, nil)
 	return decoder.Error()
 }
 
@@ -146,8 +146,8 @@ func (e ApduError) MarshalBinary() ([]byte, error) {
 
 func (e *ApduError) UnmarshalBinary(data []byte) error {
 	decoder := encoding.NewDecoder(data)
-	decoder.AppData(&e.Class)
-	decoder.AppData(&e.Code)
+	decoder.AppData(&e.Class, nil)
+	decoder.AppData(&e.Code, nil)
 	return decoder.Error()
 }
 
