@@ -37,7 +37,7 @@ type NPDU struct {
 	NetworkMessageType byte
 	VendorID           uint16
 
-	ADPU *APDU
+	APDU *APDU
 }
 
 func (npdu NPDU) MarshalBinary() ([]byte, error) {
@@ -85,8 +85,8 @@ func (npdu NPDU) MarshalBinary() ([]byte, error) {
 		}
 	}
 	bytes := b.Bytes()
-	if npdu.ADPU != nil {
-		bytesapdu, err := npdu.ADPU.MarshalBinary()
+	if npdu.APDU != nil {
+		bytesapdu, err := npdu.APDU.MarshalBinary()
 		if err != nil {
 			return nil, err
 		}
@@ -171,8 +171,8 @@ func (npdu *NPDU) UnmarshallBinary(data []byte) error {
 			}
 		}
 	} else {
-		npdu.ADPU = &APDU{}
-		return npdu.ADPU.UnmarshalBinary(buf.Bytes())
+		npdu.APDU = &APDU{}
+		return npdu.APDU.UnmarshalBinary(buf.Bytes())
 
 	}
 	return nil
@@ -384,7 +384,7 @@ func (bvlc BVLC) MarshalBinary() ([]byte, error) {
 	return b.Bytes(), nil
 }
 
-var ErrNotBAcnetIP = errors.New("packet isn't a baetyl-bacnet/IP payload ")
+var ErrNotBACnetIP = errors.New("packet isn't a baetyl-bacnet/IP payload ")
 
 func (bvlc *BVLC) UnmarshalBinary(data []byte) error {
 	buf := bytes.NewBuffer(data)
@@ -394,7 +394,7 @@ func (bvlc *BVLC) UnmarshalBinary(data []byte) error {
 	}
 	bvlc.Type = BVLCType(bvlcType)
 	if bvlc.Type != TypeBacnetIP {
-		return ErrNotBAcnetIP
+		return ErrNotBACnetIP
 	}
 	bvlcFunc, err := buf.ReadByte()
 	if err != nil {

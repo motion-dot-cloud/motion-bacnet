@@ -21,7 +21,7 @@ func TestFullEncodingAndCoherency(t *testing.T) {
 					IsNetworkLayerMessage: false,
 					ExpectingReply:        false,
 					Priority:              Normal,
-					ADPU: &APDU{
+					APDU: &APDU{
 						DataType:    UnconfirmedServiceRequest,
 						ServiceType: ServiceUnconfirmedWhoIs,
 						Payload: &ReadProperty{
@@ -53,7 +53,7 @@ func TestFullEncodingAndCoherency(t *testing.T) {
 					},
 					Source:   &bacnet.Address{},
 					HopCount: 255,
-					ADPU: &APDU{
+					APDU: &APDU{
 						DataType:    UnconfirmedServiceRequest,
 						ServiceType: ServiceUnconfirmedIAm,
 						Payload: &Iam{

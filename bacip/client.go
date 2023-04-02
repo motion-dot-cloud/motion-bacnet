@@ -168,10 +168,10 @@ func (c *Client) listen() {
 func (c *Client) handleMessage(src *net.UDPAddr, b []byte) error {
 	var bvlc BVLC
 	err := bvlc.UnmarshalBinary(b)
-	if err != nil && errors.Is(err, ErrNotBAcnetIP) {
+	if err != nil && errors.Is(err, ErrNotBACnetIP) {
 		return err
 	}
-	apdu := bvlc.NPDU.ADPU
+	apdu := bvlc.NPDU.APDU
 	if apdu == nil {
 		c.Logger.Info(fmt.Sprintf("Received network packet %+v", bvlc.NPDU))
 		return nil
@@ -183,7 +183,7 @@ func (c *Client) handleMessage(src *net.UDPAddr, b []byte) error {
 	}
 	c.subscriptions.RUnlock()
 	if apdu.DataType == ComplexAck || apdu.DataType == SimpleAck || apdu.DataType == Error {
-		invokeID := bvlc.NPDU.ADPU.InvokeID
+		invokeID := bvlc.NPDU.APDU.InvokeID
 		tx, ok := c.transactions.GetTransaction(invokeID)
 		if !ok {
 			return fmt.Errorf("no transaction found for id %d", invokeID)
@@ -199,6 +199,37 @@ func (c *Client) handleMessage(src *net.UDPAddr, b []byte) error {
 	return nil
 }
 
+func (c *Client) IAm() error {
+	npdu := NPDU{
+		Version:               Version1,
+		IsNetworkLayerMessage: false,
+		ExpectingReply:        false,
+		Priority:              Normal,
+		Destination: &bacnet.Address{
+			Net: uint16(0xffff),
+		},
+		Source: nil,
+		APDU: &APDU{
+			DataType:    UnconfirmedServiceRequest,
+			ServiceType: ServiceUnconfirmedIAm,
+			Payload: &Iam{
+				ObjectID: bacnet.ObjectID{
+					Type:     bacnet.BacnetDevice,
+					Instance: 99999,
+				},
+				MaxApduLength:       0,
+				SegmentationSupport: 0,
+				VendorID:            0,
+			},
+		},
+		HopCount: 255,
+	}
+
+	_, err := c.broadcast(npdu)
+
+	return err
+}
+
 func (c *Client) WhoIs(data WhoIs, timeout time.Duration) ([]bacnet.Device, error) {
 	npdu := NPDU{
 		Version:               Version1,
@@ -209,7 +240,7 @@ func (c *Client) WhoIs(data WhoIs, timeout time.Duration) ([]bacnet.Device, erro
 			Net: uint16(0xffff),
 		},
 		Source: nil,
-		ADPU: &APDU{
+		APDU: &APDU{
 			DataType:    UnconfirmedServiceRequest,
 			ServiceType: ServiceUnconfirmedWhoIs,
 			Payload:     &data,
@@ -244,6 +275,7 @@ func (c *Client) WhoIs(data WhoIs, timeout time.Duration) ([]bacnet.Device, erro
 	defer timer.Stop()
 	//Use a set to deduplicate results
 	set := map[Iam]bacnet.Address{}
+
 	for {
 		select {
 		case <-timer.C:
@@ -260,7 +292,7 @@ func (c *Client) WhoIs(data WhoIs, timeout time.Duration) ([]bacnet.Device, erro
 			return result, nil
 		case r := <-rChan:
 			//clean/filter  network answers here
-			apdu := r.bvlc.NPDU.ADPU
+			apdu := r.bvlc.NPDU.APDU
 			if apdu != nil {
 				if apdu.DataType == UnconfirmedServiceRequest &&
 					apdu.ServiceType == ServiceUnconfirmedIAm {
@@ -312,7 +344,7 @@ func (c *Client) ReadProperty(ctx context.Context, device bacnet.Device, readPro
 			Port: c.udpPort,
 		}),
 		HopCount: 255,
-		ADPU: &APDU{
+		APDU: &APDU{
 			DataType:    ConfirmedServiceRequest,
 			ServiceType: ServiceConfirmedReadProperty,
 			InvokeID:    invokeID,
@@ -326,6 +358,7 @@ func (c *Client) ReadProperty(ctx context.Context, device bacnet.Device, readPro
 	if err != nil {
 		return nil, err
 	}
+
 	select {
 	case apdu := <-rChan:
 		//Todo: ensure response validity, ensure conversion cannot panic
@@ -356,7 +389,7 @@ func (c *Client) WriteProperty(ctx context.Context, device bacnet.Device, writeP
 			Port: c.udpPort,
 		}),
 		HopCount: 255,
-		ADPU: &APDU{
+		APDU: &APDU{
 			DataType:    ConfirmedServiceRequest,
 			ServiceType: ServiceConfirmedWriteProperty,
 			InvokeID:    invokeID,
